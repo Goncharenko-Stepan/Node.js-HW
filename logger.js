@@ -1,12 +1,10 @@
-const fs = require("fs");
-
-function logMessage(message) {
+import { promises as fsPromises } from "fs";
+async function logMessage(message) {
   const logEntry = `${message}\n`;
-  fs.appendFile("log.txt", logEntry, (err) => {
-    if (err) {
-      console.error("Error writing to file:", err);
-    }
-  });
+  try {
+    await fsPromises.appendFile("log.txt", logEntry);
+  } catch (err) {
+    console.log("Error: " + err);
+  }
 }
-
-module.exports = logMessage;
+export default logMessage;
