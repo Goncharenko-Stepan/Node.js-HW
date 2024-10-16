@@ -2,11 +2,11 @@ import { EventEmitter } from "events";
 
 const initEmit = new EventEmitter();
 
-function sendMessage(username, message, initEmit) {
-  initEmit.emit("message", { username, message });
-}
+const sendMessage = (username, message, eventObj) => {
+  eventObj.emit("onMessage", { username, message });
+};
 
-initEmit.on("message", (data) => {
+initEmit.on("onMessage", (data) => {
   console.log(`[${data.username}: ${data.message}]`);
 });
 
