@@ -1,14 +1,14 @@
-import { mkdir, rmdir } from "fs";
-mkdir("myFolder", (err) => {
-  if (err) {
-    return console.error(`Ошибка при создании каталога: ${err.message}`);
-  }
-  console.log("Каталог myFolder был создан");
-});
+import { mkdir, rmdir } from "fs/promises";
 
-rmdir("myFolder", (err) => {
-  if (err) {
-    return console.error(`Ошибка при удалении каталога: ${err.message}`);
+async function manageDirectory() {
+  try {
+    await mkdir("myFolder");
+    console.log("Каталог myFolder был создан");
+    await rmdir("myFolder");
+    console.log("Каталог myFolder был удалён");
+  } catch (err) {
+    console.error(`Ошибка: ${err.message}`);
   }
-  console.log("Каталог myFolder был удалён");
-});
+}
+
+manageDirectory();
