@@ -28,7 +28,8 @@ const users = [
   },
 ];
 
-const findUserByEmail = () => users.find((user) => (user.email = email));
+const findUserByEmail = (email) => users.find((user) => user.email === email);
+
 // ** Регистрация **
 app.post("/register", async (req, res) => {
   const { email, password, username, name } = req.body;
@@ -43,7 +44,7 @@ app.post("/register", async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = {
       id: users.length + 1,
@@ -63,15 +64,16 @@ app.post("/register", async (req, res) => {
     res.status(500).send("Произошла ошибка на сервере");
   }
 });
+
 // ** Смена пароля **
 app.post("/change-password", async (req, res) => {
   const { email, newPassword } = req.body;
-  const user = findByEmail(email);
+  const user = findUserByEmail(email);
   if (!user) {
     return res.status(404).json({ message: "Пользователь не найден" });
   }
   try {
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
     user.password = hashedPassword;
     user.mustChangePassword = false;
     res.status(200).json({ message: "Пароль успешно изменен" });
@@ -80,16 +82,17 @@ app.post("/change-password", async (req, res) => {
     res.status(500).json({ message: "Ошибка на сервере" });
   }
 });
+
 // ** Удаление аккаунта **
 app.post("/delete-account", async (req, res) => {
   const { email, password } = req.body;
-  const user = findByEmail(email);
+  const user = findUserByEmail(email);
   if (!user) {
     return res.status(404).json({ message: "Пользователь не найден!" });
   }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    res.status(400).json({ message: "Неверный пароль" });
+    return res.status(400).json({ message: "Неверный пароль" });
   }
   const index = users.findIndex((u) => u.email === email);
   if (index !== -1) {
@@ -99,11 +102,11 @@ app.post("/delete-account", async (req, res) => {
 
   res.status(500).send("Ошибка при удалении аккаунта");
 });
-// *** Ограничение доступа по роли ***
 
+// *** Ограничение доступа по роли ***
 app.get("/admin", (req, res) => {
   const { email } = req.body;
-  const user = findByEmail(email);
+  const user = findUserByEmail(email);
   if (!user) {
     return res.status(404).json({ message: "Пользователь не найден!" });
   }
@@ -113,11 +116,12 @@ app.get("/admin", (req, res) => {
       .status(403)
       .json({ message: "Доступ запрещён: Требуется роль администратора" });
   }
-  res.status(200);
+  res
+    .status(200)
+    .json({ message: "Доступ разрешен. Добро пожаловать, администратор!" });
 });
 
 // ** Смена email **
-
 app.post("/change-email", async (req, res) => {
   const { email, newEmail, password } = req.body;
 
