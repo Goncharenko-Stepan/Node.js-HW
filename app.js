@@ -1,146 +1,184 @@
 import express from "express";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
-
-const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
 
+const JWT_SECRET = process.env.JWT_SECRET;
+const PORT = process.env.PORT || 3000;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in .env");
+}
+
+// Массив юзеров
 const users = [
   {
     id: 1,
-    username: "user1",
-    password: "$2b$10$EIXGFz1QluTfOCn/ztkZQ.BXHytVgMbdRsnkrpSALubslcFZP6Uyy",
-    email: "user1@example.com",
-    name: "User One",
-    role: "user",
-    mustChangePassword: false,
+    username: "john_doe",
+    email: "john.doe@example.com",
+    password: await bcrypt.hash("password123", 10),
+    role: "admin",
   },
   {
     id: 2,
-    username: "user2",
-    password: "$2b$10$EIXGFz1QluTfOCn/ztkZQ.BXHytVgMbdRsnkrpSALubslcFZP6Uyy",
-    email: "user2@example.com",
-    name: "User Two",
-    role: "admin",
-    mustChangePassword: true,
+    username: "jane_smith",
+    email: "jane.smith@example.com",
+    password: await bcrypt.hash("securepass456", 10),
+    role: "user",
   },
 ];
 
-const findUserByEmail = (email) => users.find((user) => user.email === email);
+// мидлвара для проверки токена
+const authenticateJWT = (req, res, next) => {
+  const token =
+    req.headers.authorization && req.headers.authorization.split(" ")[1];
 
-// ** Регистрация **
-app.post("/register", async (req, res) => {
-  const { email, password, username, name } = req.body;
-
-  if (!email || !password || !username || !name) {
-    return res.status(400).send("Пожалуйста, заполните все поля");
-  }
-
-  const existingUser = findUserByEmail(email);
-  if (existingUser) {
-    return res.status(400).send("Этот email уже зарегистрирован");
+  if (!token) {
+    return res.status(401).send("Access token is missing or invalid");
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const newUser = {
-      id: users.length + 1,
-      username,
-      password: hashedPassword,
-      email,
-      name,
-      role: "user",
-      mustChangePassword: false,
-    };
-
-    users.push(newUser);
-
-    res.status(201).send("Пользователь успешно зарегистрирован");
-  } catch (err) {
-    console.error("Ошибка при регистрации пользователя:" + err);
-    res.status(500).send("Произошла ошибка на сервере");
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).send("Invalid or expired token");
   }
+};
+const authorizeRole = (role) => (req, res, next) => {
+  if (req.user.role !== role) {
+    return res.status(403).send("Access denied: insufficient permissions");
+  }
+  next();
+};
+// Проверка состояния сервера
+app.get("/", (_, res) => {
+  res.send("Сервер работает исправно");
 });
 
-// ** Смена пароля **
-app.post("/change-password", async (req, res) => {
-  const { email, newPassword } = req.body;
-  const user = findUserByEmail(email);
-  if (!user) {
-    return res.status(404).json({ message: "Пользователь не найден" });
+// Логин
+app.post("/login", async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).send("All fields must be filled in");
   }
+
   try {
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-    user.password = hashedPassword;
-    user.mustChangePassword = false;
-    res.status(200).json({ message: "Пароль успешно изменен" });
+    const user = users.find(
+      (u) => u.username === username && u.email === email
+    );
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).send("Invalid password");
+    }
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(200).json({ message: "Login successful", token });
   } catch (err) {
-    console.error("Ошибка при смене пароля!" + err);
-    res.status(500).json({ message: "Ошибка на сервере" });
+    console.error(err);
+    res.status(500).send("Internal server error");
   }
 });
 
-// ** Удаление аккаунта **
-app.post("/delete-account", async (req, res) => {
-  const { email, password } = req.body;
-  const user = findUserByEmail(email);
-  if (!user) {
-    return res.status(404).json({ message: "Пользователь не найден!" });
-  }
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    return res.status(400).json({ message: "Неверный пароль" });
-  }
-  const index = users.findIndex((u) => u.email === email);
-  if (index !== -1) {
-    users.splice(index, 1);
-    return res.status(200).send("Аккаунт успешно удален");
-  }
-
-  res.status(500).send("Ошибка при удалении аккаунта");
-});
-
-// *** Ограничение доступа по роли ***
-app.get("/admin", (req, res) => {
+// Обновление email
+app.put("/update-email", authenticateJWT, (req, res) => {
   const { email } = req.body;
-  const user = findUserByEmail(email);
-  if (!user) {
-    return res.status(404).json({ message: "Пользователь не найден!" });
+
+  if (!email) {
+    return res.status(400).send("New email must be provided");
   }
 
-  if (user.role !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "Доступ запрещён: Требуется роль администратора" });
+  try {
+    const user = users.find((u) => u.id === req.user.id);
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    user.email = email;
+    res.status(200).json({ message: "Email updated successfully", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
   }
-  res
-    .status(200)
-    .json({ message: "Доступ разрешен. Добро пожаловать, администратор!" });
 });
 
-// ** Смена email **
-app.post("/change-email", async (req, res) => {
-  const { email, newEmail, password } = req.body;
+app.put("/update-role", authenticateJWT, authorizeRole("admin"), (req, res) => {
+  const { userId, newRole } = req.body;
 
-  const user = findUserByEmail(email);
-  if (!user) {
-    return res.status(404).send("Пользователь не найден");
-  }
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    return res.status(400).json({ message: "Неверный пароль" });
+  if (!userId || !newRole) {
+    return res.status(400).send("User ID and new role must be provided");
   }
 
-  if (findUserByEmail(newEmail)) {
-    return res.status(400).json({ message: "Данная почта уже используется" });
+  try {
+    const user = users.find((u) => u.id === userId);
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    user.role = newRole;
+    res.status(200).json({ message: "Role updated successfully", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
   }
-  user.email = newEmail;
-  res.status(200).json({ message: "Ваша почта была обновлена" });
 });
 
+app.delete("/delete-account", authenticateJWT, async (req, res) => {
+  try {
+    const userID = req.user.id;
+
+    const userIndex = users.findIndex((user) => user.id === userID);
+
+    if (userIndex === -1) {
+      return res.status(404).send("User is not found");
+    }
+
+    users.splice(userIndex, 1);
+
+    res.status(200).json({ message: "Account successfully deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+app.post("/refresh-token", (req, res) => {
+  const refreshToken = req.headers["x-refresh-token"];
+
+  if (!refreshToken) {
+    return res.status(401).send("Refresh token is missing");
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET);
+
+    const newToken = jwt.sign(
+      { id: decoded.id, username: decoded.username },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(200).json({ message: "Token refreshed", token: newToken });
+  } catch (error) {
+    return res.status(403).send("Invalid or expired refresh token");
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server runs at http://localhost:${PORT}`);
 });
