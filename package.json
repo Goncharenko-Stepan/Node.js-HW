@@ -2,17 +2,24 @@
   "name": "node.js-hw",
   "version": "1.0.0",
   "main": "app.js",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Goncharenko-Stepan/Node.js-HW.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Goncharenko-Stepan/Node.js-HW/issues"
+  },
+  "homepage": "https://github.com/Goncharenko-Stepan/Node.js-HW#readme",
+  "description": ""
 }
