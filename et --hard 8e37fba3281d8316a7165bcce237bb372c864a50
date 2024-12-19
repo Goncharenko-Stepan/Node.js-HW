@@ -1,0 +1,56 @@
+[33mcommit a35f05c2c5251cb08c75e6f4276716f2b8fea096[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mHW21[m[33m, [m[1;31morigin/HW21[m[33m)[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Thu Dec 19 16:43:28 2024 +0100
+
+    HW22
+
+[33mcommit 8e37fba3281d8316a7165bcce237bb372c864a50[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Mon Dec 16 18:09:46 2024 +0100
+
+    HW21
+
+[33mcommit 55f32a5d8a76b7b4f19239523cbbba4f6726af23[m[33m ([m[1;31morigin/HW20[m[33m, [m[1;32mHW20[m[33m)[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Wed Dec 11 22:10:52 2024 +0100
+
+    HW20
+
+[33mcommit 5266dec860457b9ac480d212215f5a49f32e9863[m[33m ([m[1;31morigin/HW1[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mHW1[m[33m)[m
+Author: Gleivic <168016974+Goncharenko-Stepan@users.noreply.github.com>
+Date:   Tue Nov 19 16:56:19 2024 +0100
+
+    default value
+
+[33mcommit e6b17c50fca6e63750a5cc652a2b8d71e17b10db[m
+Merge: 85977d3 75500f1
+Author: Gleivic <168016974+Goncharenko-Stepan@users.noreply.github.com>
+Date:   Tue Nov 19 16:54:03 2024 +0100
+
+    Merge pull request #1 from Goncharenko-Stepan/HW9
+    
+    Edit HW9
+
+[33mcommit 75500f1284f8782e776102ae2deb9a41b951b70d[m[33m ([m[1;31morigin/HW9[m[33m)[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Tue Nov 19 16:52:53 2024 +0100
+
+    Edit HW9
+
+[33mcommit 85977d34be722afc9c61502fcbcbe75800f4a65e[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Tue Nov 19 16:46:09 2024 +0100
+
+    HW9
+
+[33mcommit abf39a9f33a76eedd40d20b8dccb40b950056871[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Tue Oct 15 14:46:28 2024 +0200
+
+    Remake with promises
+
+[33mcommit 61409e2001cebcf73a5147ed0c022a7786da2434[m
+Author: Goncharenko-Stepan <bebrou1234@gmail.com>
+Date:   Tue Oct 8 16:55:00 2024 +0200
+
+    HW1
