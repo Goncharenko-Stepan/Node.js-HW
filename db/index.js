@@ -1,17 +1,15 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 import "dotenv/config";
 
 const mongoUri = process.env.MONGO_URI;
 
 const connectDB = async () => {
-  let client;
   try {
-    client = new MongoClient(mongoUri);
-    await client.connect();
-    console.log("Вы были подключены к базе данных!");
-    return client.db();
+    await mongoose.connect(mongoUri);
+    console.log("Подключено к базе данных");
   } catch (err) {
-    console.error("Ошибка при подключении к базе данных: " + err);
+    console.error("Ошибка при подключении к базе данных:", err);
+    process.exit(1);
   }
 };
 
