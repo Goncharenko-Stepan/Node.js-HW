@@ -1,10 +1,8 @@
 import express from "express";
 import "dotenv/config";
 import connectDB from "./db/index.js";
-import Publisher from "./model/Publisher.js";
-import Magazine from "./model/Magazine.js";
-import Tag from "./model/Tag.js";
-import Article from "./model/Article.js";
+import Product from "./model/Products.js";
+import Category from "./model/Category.js"; // Импортируем модель Category
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,121 +13,56 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    /////////////////////////////////// PUBLISHERS //////////////////////////////////////
-
-    //                                          //CREATE PUBLISHERS
-
-    app.post("/publishers", async (req, res) => {
-      try {
-        const { name, location } = req.body;
-        const publisher = await Publisher.create({ name, location });
-        res.status(201).json(publisher);
-      } catch (error) {
-        res.status(500).json({ error: "Ошибка при создании издателя" });
-      }
-    });
-
-    //                                          //GET PUBLISHERS
-
-    app.get("/publishers", async (req, res) => {
-      try {
-        const publishers = await Publisher.find();
-        res.status(200).json(publishers);
-      } catch (error) {
-        res.status(500).json({ error: "Ошибка при получении издателей" });
-      }
-    });
-
-    /////////////////////////////////// PUBLISHERS //////////////////////////////////////
-
-    /////////////////////////////////// MAGAZINES //////////////////////////////////////
-
-    //                                          //CREATE MAGAZINES
-
-    app.post("/magazines", async (req, res) => {
-      try {
-        const { title, issueNumber, publisherId } = req.body;
-        const magazine = await Magazine.create({
-          title,
-          issueNumber,
-          publisher: publisherId,
-        });
-        res.status(201).json(magazine);
-      } catch (error) {
-        res.status(500).json({ error: "Ошибка при создании журнала" });
-      }
-    });
-    //                                          //GET MAGAZINES
-    app.get("/magazines", async (req, res) => {
-      try {
-        const magazines = await Magazine.find().populate("publisher");
-        res.status(200).json(magazines);
-      } catch (error) {
-        res.status(500).json({ error: "Ошибка при получении журналов" });
-      }
-    });
-
-    /////////////////////////////////// MAGAZINES //////////////////////////////////////
-
-    /////////////////////////////////// TAGS //////////////////////////////////////
-
-    // CREATE TAGS
-    app.post("/tags", async (req, res) => {
+    //////////////////////////////////////////////////////// CATEGORY //////////////////////////////////////////////
+    //                // POST CATEGORY
+    app.post("/createCategory", async (req, res) => {
       try {
         const { name } = req.body;
-        const tag = await Tag.create({ name });
-        res.status(201).json(tag);
+        const category = new Category({ name });
+        await category.save();
+        res.status(201).json(category);
       } catch (error) {
-        res.status(500).json({ error: "Ошибка при создании тега" });
+        res.status(500).json({ error: error.message });
+      }
+    });
+    //////////////////////////////////////////////////////// CATEGORY //////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////// PRODUCTS //////////////////////////////////////////////
+    //                // GET PRODUCTS
+    app.get("/getProducts", async (req, res) => {
+      try {
+        const products = await Product.find().populate("category");
+        res.status(200).json(products);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
       }
     });
 
-    // GET TAGS
-    app.get("/tags", async (req, res) => {
+    //                // POST PRODUCT
+    app.post("/createProducts", async (req, res) => {
       try {
-        const tags = await Tag.find();
-        res.status(200).json(tags);
-      } catch (error) {
-        res.status(500).json({ error: "Ошибка при получении тегов" });
-      }
-    });
+        const { name, price, category } = req.body;
 
-    /////////////////////////////////// TAGS //////////////////////////////////////
-
-    /////////////////////////////////// ARTICLES //////////////////////////////////////
-
-    // CREATE ARTICLES
-    app.post("/articles", async (req, res) => {
-      try {
-        const { title, content, tagIds } = req.body;
-        const article = await Article.create({
-          title,
-          content,
-          tags: tagIds, // массив тегов
-        });
-        // Добавляем статью к тегам
-        for (let tagId of tagIds) {
-          await Tag.findByIdAndUpdate(tagId, {
-            $push: { articles: article._id },
-          });
+        // Найдем категорию по имени
+        const categoryDoc = await Category.findOne({ name: category });
+        if (!categoryDoc) {
+          return res.status(400).json({ error: "Category not found" });
         }
-        res.status(201).json(article);
+
+        // Создаем продукт с ObjectId категории
+        const product = new Product({
+          name,
+          price,
+          category: categoryDoc._id, // Используем _id категории
+        });
+
+        await product.save();
+        res.status(201).json(product);
       } catch (error) {
-        res.status(500).json({ error: "Ошибка при создании статьи" });
+        res.status(500).json({ error: error.message });
       }
     });
-
-    // GET ARTICLES
-    app.get("/articles", async (req, res) => {
-      try {
-        const articles = await Article.find().populate("tags"); // Заполняем теги для статей
-        res.status(200).json(articles);
-      } catch (error) {
-        res.status(500).json({ error: "Ошибка при получении статей" });
-      }
-    });
-
-    /////////////////////////////////// ARTICLES //////////////////////////////////////
+    //////////////////////////////////////////////////////// PRODUCTS //////////////////////////////////////////////
 
     app.listen(PORT, () => {
       console.log(`Сервер запущен на http://localhost:${PORT}`);
