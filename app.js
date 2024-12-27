@@ -1,70 +1,50 @@
 import express from "express";
 import "dotenv/config";
 import connectDB from "./db/index.js";
-import Product from "./model/Products.js";
-import Category from "./model/Category.js"; // Импортируем модель Category
+import { Server } from "socket.io";
+import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 const startServer = async () => {
   try {
     await connectDB();
 
-    //////////////////////////////////////////////////////// CATEGORY //////////////////////////////////////////////
-    //                // POST CATEGORY
-    app.post("/createCategory", async (req, res) => {
-      try {
-        const { name } = req.body;
-        const category = new Category({ name });
-        await category.save();
-        res.status(201).json(category);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-    //////////////////////////////////////////////////////// CATEGORY //////////////////////////////////////////////
+    const server = http.createServer(app);
+    const io = new Server(server);
 
-    //////////////////////////////////////////////////////// PRODUCTS //////////////////////////////////////////////
-    //                // GET PRODUCTS
-    app.get("/getProducts", async (req, res) => {
-      try {
-        const products = await Product.find().populate("category");
-        res.status(200).json(products);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
+    io.on("connection", (socket) => {
+      console.log("Новый пользователь подключился");
+
+      socket.on("message", (msg) => {
+        console.log(`Сообщение от клиента: ${msg}`);
+        socket.emit("confirmation", "Сообщение получено сервером");
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Пользователь отключился");
+      });
     });
 
-    //                // POST PRODUCT
-    app.post("/createProducts", async (req, res) => {
-      try {
-        const { name, price, category } = req.body;
-
-        // Найдем категорию по имени
-        const categoryDoc = await Category.findOne({ name: category });
-        if (!categoryDoc) {
-          return res.status(400).json({ error: "Category not found" });
-        }
-
-        // Создаем продукт с ObjectId категории
-        const product = new Product({
-          name,
-          price,
-          category: categoryDoc._id, // Используем _id категории
-        });
-
-        await product.save();
-        res.status(201).json(product);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
+    app.post("/send-message", (req, res) => {
+      const { message } = req.body;
+      console.log("Получено сообщение:", message);
+      res.status(200).json({ confirmation: "Сообщение получено сервером" });
     });
-    //////////////////////////////////////////////////////// PRODUCTS //////////////////////////////////////////////
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Сервер запущен на http://localhost:${PORT}`);
     });
   } catch (error) {

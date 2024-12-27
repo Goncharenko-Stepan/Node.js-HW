@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Чат с HTTP и WebSocket</title>
+  </head>
+  <body>
+    <!--                             ФОРМА ОТПРАВКИ СООБЩЕНИЙ START                          -->
+    <h1>Отправка сообщений</h1>
+
+    <h2>HTTP-запрос</h2>
+    <input type="text" id="httpMessageInput" placeholder="HTTP-запрос" />
+    <button id="httpSendButton">Отправить HTTP-сообщение</button>
+    <div id="httpMessages"></div>
+
+    <h2>WebSocket-сообщение</h2>
+    <input
+      type="text"
+      id="socketMessageInput"
+      placeholder="WebSocket-сообщение"
+    />
+    <button id="socketSendButton">Отправить WebSocket-сообщение</button>
+    <div id="socketMessages"></div>
+    <!--                             ФОРМА ОТПРАВКИ СООБЩЕНИЙ END                         -->
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+      const socket = io("http://localhost:3000");
+
+      //////////////////////////////////////////// HTTP-запрос ////////////////////////////////////
+      const httpSendButton = document.getElementById("httpSendButton");
+      const httpMessageInput = document.getElementById("httpMessageInput");
+      const httpMessages = document.getElementById("httpMessages");
+
+      httpSendButton.addEventListener("click", () => {
+        const message = httpMessageInput.value;
+
+        fetch("http://localhost:3000/send-message", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const newMessage = document.createElement("div");
+            newMessage.textContent = `HTTP Ответ: ${data.confirmation}`;
+            httpMessages.appendChild(newMessage);
+          })
+          .catch((error) => console.error("Ошибка:", error));
+      });
+
+      //////////////////////////////////// WebSocket-сообщение /////////////////////////////////////
+      const socketSendButton = document.getElementById("socketSendButton");
+      const socketMessageInput = document.getElementById("socketMessageInput");
+      const socketMessages = document.getElementById("socketMessages");
+
+      socketSendButton.addEventListener("click", () => {
+        const message = socketMessageInput.value;
+
+        socket.emit("message", message);
+      });
+
+      socket.on("confirmation", (msg) => {
+        const newMessage = document.createElement("div");
+        newMessage.textContent = `WebSocket Ответ: ${msg}`;
+        socketMessages.appendChild(newMessage);
+      });
+    </script>
+  </body>
+</html>
