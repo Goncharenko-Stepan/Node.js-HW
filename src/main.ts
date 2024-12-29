@@ -1,132 +1,65 @@
-/////////////////////////////////////////// Задание 1 ///////////////////////////////////////////
+//////////////////////////////// Задание 1 //////////////////////////////////
 
-type Admin = {
-  name: string;
-  permissions: string[];
-}; // Тип админа
+console.log("Задание 1");
 
-type User = {
-  name: string;
-  email: string;
-}; // Тип юзера
-
-type AdminUser = Admin & User; // Объедененный тип
-
-const adminUser: AdminUser = {
-  name: "John Doe",
-  permissions: ["read", "write", "delete"],
-  email: "john.doe@example.com",
-}; // Константа объеденённого типа
-
-console.log(adminUser);
-/////////////////////////////////////////// Задание 2 ///////////////////////////////////////////
-
-class Car {
-  constructor(
-    make: string,
-    model: string,
-    engine: { type: string; horsepower: number },
-    year?: number
-  ) {
-    this.make = make;
-    this.model = model;
-    this.engine = engine;
-    this.year = year;
-  }
-
-  make: string;
-  model: string;
-  engine: { type: string; horsepower: number };
-  year?: number;
-
-  displayInfo(): void {
-    // Выводит информацию о машине
-    console.log(`Car: ${this.make} ${this.model}`);
-    console.log(
-      `Engine: ${this.engine.type} with ${this.engine.horsepower} HP`
-    );
-    console.log(`Year: ${this.year ?? "Not specified"}`);
-  }
-}
-
-// Пример использования
-const engineInfo = {
-  type: "V8",
-  horsepower: 450,
+const sumEvenNumbers = (numbers: number[]): number => {
+  return numbers
+    .filter((num: number) => num % 2 === 0)
+    .reduce((sum: number, num: number) => sum + num, 0);
 };
 
-const car = new Car("Ford", "Mustang", engineInfo, 2022);
-car.displayInfo();
+console.log(sumEvenNumbers([1, 2, 3, 4, 5, 6]));
 
-const carWithoutYear = new Car("Toyota", "Corolla", {
-  type: "Inline-4",
-  horsepower: 132,
-});
-carWithoutYear.displayInfo();
+//////////////////////////////// Задание 2 //////////////////////////////////
 
-/////////////////////////////////////////// Задание 3 ///////////////////////////////////////////
+console.log("Задание 2");
 
-interface Product {
-  name: string;
-  price: number;
+interface StringToBooleanFunction {
+  (input: string): boolean;
 }
 
-function calculateDiscount(product: Product, discount: number): number {
-  return product.price - (product.price * discount) / 100;
-}
-const product: Product = { name: "Laptop", price: 1000 };
-console.log(calculateDiscount(product, 10));
-
-/////////////////////////////////////////// Задание 4 ///////////////////////////////////////////
-interface Employee {
-  name: string;
-  salary: number;
-}
-
-const employees: Employee[] = [
-  { name: "Alice", salary: 5000 },
-  { name: "Bob", salary: 6000 },
-  { name: "Charlie", salary: 7000 },
-];
-
-function getSalaries(employees: Employee[]): number[] {
-  return employees.map((employee) => employee.salary);
-}
-
-// Пример использования
-console.log(getSalaries(employees)); // [5000, 6000, 7000]
-
-/////////////////////////////////////////// Задание 5 ///////////////////////////////////////////
-interface Person {
-  firstName: string;
-  lastName: string;
-}
-
-interface Student extends Person {
-  grade: number;
-}
-
-const student: Student = {
-  firstName: "John",
-  lastName: "Doe",
-  grade: 90,
+const isStringEmpty: StringToBooleanFunction = (input: string): boolean => {
+  return input.trim().length === 0;
 };
 
-function displayStudentInfo(student: Student): void {
-  console.log(
-    `Student: ${student.firstName} ${student.lastName}, Grade: ${student.grade}`
-  );
+console.log(isStringEmpty("")); // true
+console.log(isStringEmpty("Hello")); // false
+console.log(isStringEmpty("   ")); // true
+
+//////////////////////////////// Задание 3 //////////////////////////////////
+
+console.log("Задание 3");
+
+type CompareStrings = (str1: string, str2: string) => boolean;
+
+const areStringsEqual: CompareStrings = (str1, str2) => {
+  return str1 === str2;
+};
+
+console.log(areStringsEqual("Hello", "Hello")); // Вывод: true
+console.log(areStringsEqual("Hello", "World")); // Вывод: false
+
+//////////////////////////////// Задание 4 //////////////////////////////////
+
+console.log("Задание 4");
+
+function getLastElement<T>(array: T[]): T | undefined {
+  return array.length > 0 ? array[array.length - 1] : undefined;
 }
 
 // Пример использования
-displayStudentInfo(student);
+console.log(getLastElement([1, 2, 3, 4])); // Вывод: 4
+console.log(getLastElement(["a", "b", "c"])); // Вывод: "c"
+console.log(getLastElement([])); // Вывод: undefined
 
-/////////////////////////////////////////// Задание 6 ///////////////////////////////////////////
-interface ConcatStrings {
-  (str1: string, str2: string): string;
+//////////////////////////////// Задание 5 //////////////////////////////////
+
+console.log("Задание 5");
+
+function makeTriple<T>(a: T, b: T, c: T): T[] {
+  return [a, b, c];
 }
 
-const concatStrings: ConcatStrings = (str1, str2) => str1 + str2;
-
-// Пример использования
-console.log(concatStrings("Hello, ", "World!"));
+console.log(makeTriple(1, 2, 3)); // Вывод: [1, 2, 3]
+console.log(makeTriple("a", "b", "c")); // Вывод: ["a", "b", "c"]
+console.log(makeTriple(true, false, true)); // Вывод: [true, false, true]
