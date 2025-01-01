@@ -1,25 +1,21 @@
 {
-  "name": "node.js-hw",
+  "name": "homework24",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "typescript": "^5.5.4"
+  },
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Goncharenko-Stepan/Node.js-HW.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Goncharenko-Stepan/Node.js-HW/issues"
-  },
-  "homepage": "https://github.com/Goncharenko-Stepan/Node.js-HW#readme",
-  "description": ""
+    "express": "^4.21.2",
+    "ts-node": "^10.9.2"
+  }
 }
